@@ -8,6 +8,13 @@
 #include <map>
 #include <algorithm>
 
+static const int32_t ipSize = 4;
+using IpPoolStr = std::vector<std::vector<std::string> >;
+using IpTuple = std::tuple<uint8_t, uint8_t, uint8_t, uint8_t>;
+using IpPoolTuple = std::vector<IpTuple>;
+
+std::vector<IpTuple> sortIpPool;
+
 // ("",  '.') -> [""]
 // ("11", '.') -> ["11"]
 // ("..", '.') -> ["", "", ""]
@@ -33,8 +40,8 @@ std::vector<std::string> split(const std::string &str, char d)
     return r;
 }
 
-void printIp(std::vector<std::vector<std::string> > & ip_pool) {
-    for(std::vector<std::vector<std::string> >::const_iterator ip = ip_pool.cbegin(); ip != ip_pool.cend(); ++ip)
+void printIp(IpPoolStr & ip_pool) {
+    for(IpPoolStr::const_iterator ip = ip_pool.cbegin(); ip != ip_pool.cend(); ++ip)
     {
         for(std::vector<std::string>::const_iterator ip_part = ip->cbegin(); ip_part != ip->cend(); ++ip_part)
         {
@@ -49,83 +56,99 @@ void printIp(std::vector<std::vector<std::string> > & ip_pool) {
     }
 }
 
-void ipSort(std::vector<std::vector<std::string> > & ipPool) {
+void ipSort(IpPoolStr & ipPoolStr) {
+    sortIpPool.reserve(ipPoolStr.size());
+    for (const auto & line : ipPoolStr) {
+        assert(line.size() == ipSize);
+        sortIpPool.emplace_back( std::make_tuple( std::stoi(line[0]),
+                                            std::stoi(line[1]),
+                                            std::stoi(line[2]),
+                                            std::stoi(line[3]) )
+                          );
+    }
+    sort(sortIpPool.begin(), sortIpPool.end(), [](const IpTuple& a, const IpTuple& b)
+                                               {return a > b; });
+//    for (const auto& p: sortIpPool)
+//        std::cout << "{ " << std::get<0>(p)
+//                  << ", " << std::get<1>(p)
+//                  << ", " << std::get<2>(p)
+//                  << ", " << std::get<3>(p)
+//                  << " }\n";
 
-    std::vector < std::tuple<int, int, int, int> > vect;
-    vect.reserve(ipPool.size());
-
-    for (const auto & line : ipPool) {
-//        auto val = std::pair<int32_t, int32_t>(std::stoi(line.at(col)), pos++);
-        vect.emplace_back( std::make_tuple( std::stoi(line.at(0)),
-                                            std::stoi(line.at(1)),
-                                            std::stoi(line.at(2)),
-                                            std::stoi(line.at(3)) ) );
+    for (int32_t i = 0; i < ipPoolStr.size(); ++i) {
+        ipPoolStr[i][0] = std::to_string(std::get<0>(sortIpPool[i]));
+        ipPoolStr[i][1] = std::to_string(std::get<1>(sortIpPool[i]));
+        ipPoolStr[i][2] = std::to_string(std::get<2>(sortIpPool[i]));
+        ipPoolStr[i][3] = std::to_string(std::get<3>(sortIpPool[i]));
     }
 
-//    std::sort(vect.begin(), vect.end());
-
-    sort(vect.begin(), vect.end(), [](const std::tuple<int, int, int, int>& a,
-                                      const std::tuple<int, int, int, int>& b)
-         {return a > b; });
-
-    for (const auto& p: vect)
-        std::cout << "{ " << std::get<0>(p)
-                  << ", " << std::get<1>(p)
-                  << ", " << std::get<2>(p)
-                  << ", " << std::get<3>(p)
-                  << " }\n";
-
-
-//    printIp(ipPoolSort);
+    printIp(ipPoolStr);
 
     return;
-
-/*
-    int32_t numLines = ipPool.size();
-    int32_t numCols = ipPool.at(0).size();
-
-    int32_t pos = 0;
-    std::map<int32_t, int32_t> ipval_pos;
-    std::vector<std::vector<std::string> > ipPoolSort;
-    ipPoolSort.reserve(ipPool.size());
-
-    for (int32_t col = 0; col < numCols; ++col) {
-
-
-
-
-        ipval_pos.clear();
-        for (const auto & line : ipPool) {
-            //        ipval_pos.insert({std::stoi(line.at(0)), pos++});
-            auto val = std::pair<int32_t, int32_t>(std::stoi(line.at(col)), pos++);
-            ipval_pos.insert(val);
-//            std::cout << "ipval_pos = [" << val.first << ", \t"<< val.second << "]" << std::endl;
-        }
-//        std::cout << "=========" << std::endl;
-//        for (const auto & val : ipval_pos) {
-//            std::cout << "ipval_pos = [" << val.first << ", \t"<< val.second << "]"<< std::endl;
-//        }
-//        std::cout << "=========" << std::endl;
-
-        ipPoolSort.clear();
-
-        for (const auto & val : ipval_pos) {
-            auto idx = val.second;
-//            std::cout << "ipval_pos = [" << idx << "]"<< std::endl;
-            ipPoolSort.emplace_back(std::move(  ipPool.at(  idx )  ));
-        }
-
-        ipPool = std::move(ipPoolSort);
-
-    }
-
-    std::cout << "HW2 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
-//    printIp(ipPoolSort);
-*/
-
 }
 
+IpPoolStr filter(int16_t firstByte, int16_t secondByte = -1) {
 
+//    uint64_t elemSize = 0;
+//    for (const auto& ip: sortIpPool) {
+//        if (std::get<0>(ip) == firstByte) {
+//            ++elemSize;
+//        }
+//    }
+    IpPoolStr filteredPool;
+//    filteredPool.reserve(elemSize);
+
+    for (const auto& ip: sortIpPool) {
+        if (std::get<0>(ip) == firstByte) {
+            bool needToAdd = false;
+            if (secondByte != -1) {
+                if (std::get<1>(ip) == secondByte) {
+                    needToAdd = true;
+                }
+            } else {
+                needToAdd = true;
+            }
+
+            if (needToAdd) {
+                auto vv = std::vector<std::string>{std::to_string(std::get<0>(ip)),
+                    std::to_string(std::get<1>(ip)),
+                    std::to_string(std::get<2>(ip)),
+                    std::to_string(std::get<3>(ip))
+                };
+                filteredPool.emplace_back(vv);
+            }
+        }
+    }
+
+    return filteredPool;
+}
+
+IpPoolStr filter_any(uint8_t val) {
+
+    IpPoolStr filteredPool;
+
+    for (const auto& ip: sortIpPool) {
+        uint8_t ips[4];
+        std::tie(ips[0], ips[1], ips[2], ips[3]) = ip;
+        bool needToAdd = false;
+        for (const auto & el : ips) {
+            if (el == val) {
+                needToAdd = true;
+                break;
+            }
+        }
+        if (needToAdd) {
+            auto vv = std::vector<std::string>{std::to_string(std::get<0>(ip)),
+                std::to_string(std::get<1>(ip)),
+                std::to_string(std::get<2>(ip)),
+                std::to_string(std::get<3>(ip))
+            };
+            filteredPool.emplace_back(vv);
+        }
+    }
+
+    return filteredPool;
+}
 
  int main(int argc, char const *argv[])
 //int main()
@@ -134,34 +157,31 @@ void ipSort(std::vector<std::vector<std::string> > & ipPool) {
 //    return 0;
     try
     {
-        int32_t maxReadNum = 80;
+//        int32_t maxReadNum = 80;
+        int32_t maxReadNum = std::numeric_limits<int32_t>::max();
         int32_t readCnt = 0;
-
 
         std::string filename = "ip_filter.tsv";
         std::ifstream inFileStream;
         inFileStream.open(filename);
 
-        std::vector<std::vector<std::string> > ip_pool;
-
+        IpPoolStr ipPoolStr;
         for(std::string line; std::getline(inFileStream, line);)
         {
             std::vector<std::string> v = split(line, '\t');
-            ip_pool.push_back(split(v.at(0), '.'));
-
+            ipPoolStr.push_back(split(v.at(0), '.'));
             if (++readCnt > maxReadNum) {
                 break;
             }
         }
         inFileStream.close();
 
-        printIp(ip_pool);
+        printIp(ipPoolStr);
 
         // TODO reverse lexicographically sort
-        ipSort(ip_pool);
-
-
-
+        ipSort(ipPoolStr);
+        std::cout << "ipSort ===================================" << std::endl;
+        printIp(ipPoolStr);
 
         // 222.173.235.246
         // 222.130.177.64
@@ -173,6 +193,9 @@ void ipSort(std::vector<std::vector<std::string> > & ipPool) {
 
         // TODO filter by first byte and output
         // ip = filter(1)
+        IpPoolStr ipFirst = filter(1);
+        std::cout << "filter(1) ===================================" << std::endl;
+        printIp(ipFirst);
 
         // 1.231.69.33
         // 1.87.203.225
@@ -182,6 +205,9 @@ void ipSort(std::vector<std::vector<std::string> > & ipPool) {
 
         // TODO filter by first and second bytes and output
         // ip = filter(46, 70)
+        IpPoolStr ipSecond = filter(46, 70);
+        std::cout << "filter(46, 70) ===================================" << std::endl;
+        printIp(ipSecond);
 
         // 46.70.225.39
         // 46.70.147.26
@@ -190,6 +216,9 @@ void ipSort(std::vector<std::vector<std::string> > & ipPool) {
 
         // TODO filter by any byte and output
         // ip = filter_any(46)
+        IpPoolStr ipAny = filter_any(46);
+        std::cout << "filter_any(46) ===================================" << std::endl;
+        printIp(ipAny);
 
         // 186.204.34.46
         // 186.46.222.194
