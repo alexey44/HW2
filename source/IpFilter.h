@@ -21,11 +21,13 @@ class IpFilter {
   // (".11", '.') -> ["", "11"]
   // ("11.22", '.') -> ["11", "22"]
   */
-  static std::vector<std::string> Split(const std::string& str, char d);
 
-  using IpPoolStr = std::vector<std::vector<std::string> >;
+  using StrVec = std::vector<std::string>;
+  using IpPoolStr = std::vector<StrVec>;
   using IpTuple = std::tuple<uint8_t, uint8_t, uint8_t, uint8_t>;
   using IpPoolTuple = std::vector<IpTuple>;
+
+  static StrVec Split(const std::string& str, char d);
 
   void ReadIpPool(std::ifstream& inFileStream);
   void PrintIp();
@@ -34,11 +36,13 @@ class IpFilter {
   IpPoolStr Filter(int16_t firstByte, int16_t secondByte = -1);
   IpPoolStr FilterAny(uint8_t val);
 
+  static StrVec MakeIpStr(const IpPoolStr& ipPool);
+
   IpPoolStr ipPoolStr;
 
  private:
   int t = 0;
-  //  std::vector<std::string> Split(const std::string& str, char d);
+  //  StrVec Split(const std::string& str, char d);
 
   std::vector<IpTuple> sortIpPool;
 };

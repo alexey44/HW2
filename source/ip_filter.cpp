@@ -28,7 +28,7 @@ int main() {
       inFileStream.close();
     } else {  // release mode
       for (std::string line; std::getline(std::cin, line);) {
-        std::vector<std::string> v = IpFilter::Split(line, '\t');
+        IpFilter::StrVec v = IpFilter::Split(line, '\t');
         ipFilter.ipPoolStr.push_back(IpFilter::Split(v.at(0), '.'));
       }
     }

@@ -16,8 +16,8 @@ static const int32_t ipSize = 4;
 // (".11", '.') -> ["", "11"]
 // ("11.22", '.') -> ["11", "22"]
 */
-std::vector<std::string> IpFilter::Split(const std::string &str, char d) {
-  std::vector<std::string> r;
+IpFilter::StrVec IpFilter::Split(const std::string &str, char d) {
+  StrVec r;
 
   std::string::size_type start = 0;
   std::string::size_type stop = str.find_first_of(d);
@@ -33,13 +33,33 @@ std::vector<std::string> IpFilter::Split(const std::string &str, char d) {
   return r;
 }
 
+IpFilter::StrVec IpFilter::MakeIpStr(const IpPoolStr &ipPool) {
+  StrVec strVec;
+  strVec.reserve(ipPool.size());
+
+  for (IpPoolStr::const_iterator ip = ipPool.cbegin(); ip != ipPool.cend();
+       ++ip) {
+    std::string tmpStr = "";
+    for (StrVec::const_iterator ip_part = ip->cbegin(); ip_part != ip->cend();
+         ++ip_part) {
+      if (ip_part != ip->cbegin()) {
+        tmpStr.append(".");
+      }
+      tmpStr.append(*ip_part);
+    }
+    //    tmpStr.append("\n");
+    strVec.emplace_back(std::move(tmpStr));
+  }
+  return strVec;
+}
+
 void IpFilter::PrintIp() { PrintIp(ipPoolStr); }
 
 void IpFilter::PrintIp(const IpPoolStr &ipPool) {
   for (IpPoolStr::const_iterator ip = ipPool.cbegin(); ip != ipPool.cend();
        ++ip) {
-    for (std::vector<std::string>::const_iterator ip_part = ip->cbegin();
-         ip_part != ip->cend(); ++ip_part) {
+    for (StrVec::const_iterator ip_part = ip->cbegin(); ip_part != ip->cend();
+         ++ip_part) {
       if (ip_part != ip->cbegin()) {
         std::cout << ".";
       }
@@ -52,7 +72,7 @@ void IpFilter::PrintIp(const IpPoolStr &ipPool) {
 void IpFilter::ReadIpPool(std::ifstream &inFileStream) {
   uint64_t readCnt = 0;
   for (std::string line; std::getline(inFileStream, line);) {
-    std::vector<std::string> v = Split(line, '\t');
+    StrVec v = Split(line, '\t');
     ipPoolStr.push_back(Split(v.at(0), '.'));
     if (++readCnt > maxReadNum) {
       break;
@@ -108,7 +128,7 @@ IpFilter::IpPoolStr IpFilter::Filter(int16_t firstByte, int16_t secondByte) {
       }
 
       if (needToAdd) {
-        auto vv = std::vector<std::string>{
+        auto vv = StrVec{
             std::to_string(std::get<0>(ip)), std::to_string(std::get<1>(ip)),
             std::to_string(std::get<2>(ip)), std::to_string(std::get<3>(ip))};
         filteredPool.emplace_back(vv);
@@ -131,7 +151,7 @@ IpFilter::IpPoolStr IpFilter::FilterAny(uint8_t val) {
       }
     }
     if (needToAdd) {
-      auto vv = std::vector<std::string>{
+      auto vv = StrVec{
           std::to_string(std::get<0>(ip)), std::to_string(std::get<1>(ip)),
           std::to_string(std::get<2>(ip)), std::to_string(std::get<3>(ip))};
       filteredPool.emplace_back(vv);
