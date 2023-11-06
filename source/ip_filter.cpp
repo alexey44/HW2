@@ -17,6 +17,12 @@ int main() {
       std::ifstream inFileStream;
       inFileStream.open(filename);
 
+      if (inFileStream.is_open() == false) {
+        std::cerr << "[ip_filter] Can't open file! filename = " << filename
+                  << std::endl;
+        return -1;
+      }
+
       ipFilter.ReadIpPool(inFileStream);
 
       inFileStream.close();

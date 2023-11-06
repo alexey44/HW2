@@ -12,12 +12,11 @@ SET(TARGET_H
    )
 
 SET(TARGET_SRC
-    ip_filter.cpp
     IpFilter.cpp
     )
 
-add_executable(ip_filter ${TARGET_H} ${TARGET_SRC})
-add_executable(gtest_ip_filter ip_filter_gtest.cxx)
+add_executable(ip_filter ip_filter.cpp ${TARGET_H} ${TARGET_SRC})
+add_executable(gtest_ip_filter ip_filter_gtest.cxx ${TARGET_H} ${TARGET_SRC})
 
 set_target_properties(ip_filter 
                       gtest_ip_filter
