@@ -1,5 +1,12 @@
 #include <gtest/gtest.h>
 
+// class
+// gtest using
+
+// read data
+// parse data
+// compare with etalon
+
 // Demonstrate some basic assertions.
 TEST(HelloTest, BasicAssertions) {
   // Expect two strings not to be equal.
