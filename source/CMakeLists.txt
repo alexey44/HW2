@@ -35,9 +35,9 @@ target_include_directories(ip_filter
 #)
 ##------
 #////////////////////////////////////////////////
-#target_compile_options(ip_filter PRIVATE
-#    -Wall -Wextra -pedantic -Werror
-#)
+target_compile_options(ip_filter PRIVATE
+    -Wall -Wextra -pedantic -Werror
+)
 #////////////////////////////////////////////////
 
 #install(TARGETS helloWorld_cli RUNTIME DESTINATION bin)
