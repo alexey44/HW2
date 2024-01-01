@@ -5,37 +5,36 @@ set(PROJECT_VESRION 0.0.${PATCH_VERSION})
 
 project(ip_filter VERSION ${PROJECT_VESRION})
 
-add_executable(ip_filter ip_filter.cpp)
+find_package(GTest REQUIRED)
 
-# add_executable(test_version test_version.cpp)
+SET(TARGET_H
+    IpFilter.h
+   )
+
+SET(TARGET_SRC
+    IpFilter.cpp
+    )
+
+add_executable(ip_filter ip_filter.cpp ${TARGET_H} ${TARGET_SRC})
+add_executable(gtest_ip_filter ip_filter_gtest.cxx ${TARGET_H} ${TARGET_SRC})
 
 set_target_properties(ip_filter 
-                        #test_version 
-                        PROPERTIES
-                        CXX_STANDARD 11
-                        CXX_STANDARD_REQUIRED ON
+                      gtest_ip_filter
+                      PROPERTIES
+                      CXX_STANDARD 11
+                      CXX_STANDARD_REQUIRED ON
 )
 
 target_include_directories(ip_filter
     PRIVATE "${CMAKE_BINARY_DIR}"
 )
 
-##------
-#set_target_properties(test_version PROPERTIES
-#    COMPILE_DEFINITIONS BOOST_TEST_DYN_LINK
-#    INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
-#)
-
-#target_link_libraries(helloWorld_cli PRIVATE
-#    helloWorld
-#)
-#target_link_libraries(test_version
-#    ${Boost_LIBRARIES}
-#    helloWorld
-#)
-##------
+target_link_libraries(gtest_ip_filter GTest::GTest GTest::Main)
 #////////////////////////////////////////////////
 target_compile_options(ip_filter PRIVATE
+    -Wall -Wextra -pedantic -Werror
+)
+target_compile_options(gtest_ip_filter PRIVATE
     -Wall -Wextra -pedantic -Werror
 )
 #////////////////////////////////////////////////
@@ -54,8 +53,5 @@ target_compile_options(ip_filter PRIVATE
 
 #message(${PROJECT_VERSION_PATCH})
 
-
-
-#enable_testing()
-
-#add_test(test_version test_version)
+enable_testing()
+add_test(gtest_ip_filter gtest_ip_filter)
