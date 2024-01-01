@@ -10,8 +10,8 @@
 
 class IpFilter {
  public:
-  //  IpFilter() = default;
-  //  ~IpFilter() = default;
+  IpFilter() = default;
+  ~IpFilter() = default;
 
   /*
   // ("",  '.') -> [""]
@@ -41,8 +41,5 @@ class IpFilter {
   IpPoolStr ipPoolStr;
 
  private:
-  int t = 0;
-  //  StrVec Split(const std::string& str, char d);
-
   std::vector<IpTuple> sortIpPool;
 };

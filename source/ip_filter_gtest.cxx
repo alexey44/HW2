@@ -15,14 +15,6 @@
 // test on filter any
 // test on checksum
 
-//// Demonstrate some basic assertions.
-// TEST(HelloTest, BasicAssertions) {
-//   // Expect two strings not to be equal.
-//   EXPECT_STRNE("hello", "world");
-//   // Expect equality.
-//   EXPECT_EQ(7 * 6, 42);
-// }
-
 namespace Test {
 
 static const IpFilter::StrVec etalonFilter_1_2 = {
@@ -305,8 +297,42 @@ bool ReadTestDataFile(IpFilter& ipFilter, const std::string& filename) {
   return true;
 }
 
-// Demonstrate some basic assertions.
-TEST(IpFilterTests, FilterFirstTest) {
+void ReadAndSort(IpFilter& ipFilter, std::string filename) {
+  if (ReadTestDataFile(ipFilter, filename) == false) {
+    GTEST_FATAL_FAILURE_("[IpFilterTests] Can't read test data from file");
+  }
+  ipFilter.IpSort();
+}
+
+bool CompareResWithEtalon(const IpFilter::IpPoolStr& ipFiltered,
+                          const IpFilter::StrVec etalon) {
+  IpFilter::StrVec ipFilteredStrVec = IpFilter::MakeIpStr(ipFiltered);
+  bool isEqual = true;
+  if (ipFilteredStrVec.size() == etalon.size()) {
+    for (uint32_t i = 0; i < etalon.size(); ++i) {
+      //      std::cerr << "etalon[i] = " << etalon[i]
+      //                << ", ipFilteredStrVec = " << ipFilteredStrVec[i] <<
+      //                std::endl;
+      if (etalon[i].compare(ipFilteredStrVec[i])) {
+        isEqual = false;
+        std::cerr << "etalon[i] = " << etalon[i]
+                  << ", ipFilteredStrVec = " << ipFilteredStrVec[i]
+                  << std::endl;
+        break;
+      }
+    }
+  } else {
+    isEqual = false;
+    std::cerr << "[GTEST::CompareResWithEtalon] Size mismatch! etalon.size() = "
+              << etalon.size()
+              << ", ipFilteredStrVec.size() = " << ipFilteredStrVec.size()
+              << std::endl;
+  }
+  return isEqual;
+}
+
+TEST(IpFilterTests, FilterSortTest) {
+  // read and sort ipPool
   IpFilter ipFilter;
   std::string filename = "ip_filter.tsv";
   if (ReadTestDataFile(ipFilter, filename) == false) {
@@ -314,57 +340,59 @@ TEST(IpFilterTests, FilterFirstTest) {
   }
   ipFilter.IpSort();
 
-  IpFilter::IpPoolStr ipFilteredFirst = ipFilter.Filter(1);
-
-  IpFilter::StrVec ipFilteredFirstStr = IpFilter::MakeIpStr(ipFilteredFirst);
-  bool isEqual = true;
-  if (ipFilteredFirstStr.size() == etalonFilter_1.size()) {
-    for (uint32_t i = 0; i < etalonFilter_1.size(); ++i) {
-      //      std::cout << "etalonFilter_1[i] = " << etalonFilter_1[i] <<
-      //      std::endl;
-      if (etalonFilter_1[i].compare(ipFilteredFirstStr[i])) {
-        isEqual = false;
-        break;
-      }
-    }
-  } else {
-    isEqual = false;
-  }
-  ASSERT_TRUE(isEqual);
-
   //=====================
-  // etalon from file
-  IpFilter ipSortedEtalon;
-  std::string sortedEtalonFileName = "../ip_sorted.tsv";
-  if (ReadTestDataFile(ipSortedEtalon, sortedEtalonFileName) == false) {
-    GTEST_FATAL_FAILURE_("[IpFilterTests] Can't read test data from file");
-  }
+  // compare sorted ipFilter with etalon from file [BEGIN]
+  //  IpFilter ipSortedEtalon;
+  //  std::string sortedEtalonFileName = "../ip_sorted.tsv";
+  //  if (ReadTestDataFile(ipSortedEtalon, sortedEtalonFileName) == false) {
+  //    GTEST_FATAL_FAILURE_("[IpFilterTests] Can't read test data from file");
+  //  }
+  //  IpFilter::StrVec ipSortedEtalonStr =
+  //      IpFilter::MakeIpStr(ipSortedEtalon.ipPoolStr);
+  //  bool isEqual = CompareResWithEtalon(ipFilter.ipPoolStr,
+  //  ipSortedEtalonStr); ASSERT_TRUE(isEqual);
+  // compare sorted ipFilter with etalon from file [END]
 
-  IpFilter::StrVec ipSortedEtalonStr =
-      IpFilter::MakeIpStr(ipSortedEtalon.ipPoolStr);
-  isEqual = true;
-
-  IpFilter::StrVec ipFilteredStr = IpFilter::MakeIpStr(ipFilter.ipPoolStr);
-
-  if (ipFilteredStr.size() == ipSortedEtalonStr.size()) {
-    for (uint32_t i = 0; i < ipSortedEtalonStr.size(); ++i) {
-      std::cout << "\"" << ipSortedEtalonStr[i] << "\"," << std::endl;
-      if (ipSortedEtalonStr[i].compare(ipFilteredStr[i])) {
-        isEqual = false;
-        break;
-      }
-    }
-  } else {
-    isEqual = false;
-  }
+  // compare sorted ipFilter with etalon from code [BEGIN]
+  bool isEqual = CompareResWithEtalon(ipFilter.ipPoolStr, etalonSorted);
   ASSERT_TRUE(isEqual);
+  // compare sorted ipFilter with etalon from code [END]
+  //=====================
 
-  //  ipFilter.PrintIp();
+  //  // Expect two strings not to be equal.
+  //  EXPECT_STRNE("hello", "world");
+  //  // Expect equality.
+  //  EXPECT_EQ(7 * 6, 42);
+}
 
-  // Expect two strings not to be equal.
-  EXPECT_STRNE("hello", "world");
-  // Expect equality.
-  EXPECT_EQ(7 * 6, 42);
+TEST(IpFilterTests, FilterFirstTest) {
+  // read and sort ipPool
+  IpFilter ipFilter;
+  ReadAndSort(ipFilter, "ip_filter.tsv");
+
+  IpFilter::IpPoolStr ipFilteredFirst = ipFilter.Filter(1);
+  bool isEqual = CompareResWithEtalon(ipFilteredFirst, etalonFilter_1);
+  ASSERT_TRUE(isEqual);
+}
+
+TEST(IpFilterTests, FilterSecondTest) {
+  // read and sort ipPool
+  IpFilter ipFilter;
+  ReadAndSort(ipFilter, "ip_filter.tsv");
+
+  IpFilter::IpPoolStr ipFilteredSecond = ipFilter.Filter(46, 70);
+  bool isEqual = CompareResWithEtalon(ipFilteredSecond, etalonFilter_1_2);
+  ASSERT_TRUE(isEqual);
+}
+
+TEST(IpFilterTests, FilterAnyTest) {
+  // read and sort ipPool
+  IpFilter ipFilter;
+  ReadAndSort(ipFilter, "ip_filter.tsv");
+
+  IpFilter::IpPoolStr ipFilteredAny = ipFilter.FilterAny(46);
+  bool isEqual = CompareResWithEtalon(ipFilteredAny, etalonFilterAny);
+  ASSERT_TRUE(isEqual);
 }
 
 }  // namespace Test

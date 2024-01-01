@@ -11,7 +11,7 @@ int main() {
     //
     IpFilter ipFilter;
 
-    bool debugMode = true;
+    bool debugMode = false;
     if (debugMode) {
       std::string filename = "ip_filter.tsv";
       std::ifstream inFileStream;

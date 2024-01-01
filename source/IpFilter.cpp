@@ -131,7 +131,7 @@ IpFilter::IpPoolStr IpFilter::Filter(int16_t firstByte, int16_t secondByte) {
         auto vv = StrVec{
             std::to_string(std::get<0>(ip)), std::to_string(std::get<1>(ip)),
             std::to_string(std::get<2>(ip)), std::to_string(std::get<3>(ip))};
-        filteredPool.emplace_back(vv);
+        filteredPool.emplace_back(std::move(vv));
       }
     }
   }
@@ -154,7 +154,7 @@ IpFilter::IpPoolStr IpFilter::FilterAny(uint8_t val) {
       auto vv = StrVec{
           std::to_string(std::get<0>(ip)), std::to_string(std::get<1>(ip)),
           std::to_string(std::get<2>(ip)), std::to_string(std::get<3>(ip))};
-      filteredPool.emplace_back(vv);
+      filteredPool.emplace_back(std::move(vv));
     }
   }
   return filteredPool;
